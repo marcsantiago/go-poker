@@ -166,6 +166,7 @@ func checkHand(hand deck.Hand) (string, int) {
 			}
 		}
 	}
+	// THIS LOGIC IS BROKEN
 	if len(twoPairs) == 2 {
 		if player.Score[twoPairs[0]] > player.Score[twoPairs[1]] {
 			return "high " + twoPairs[0], 0
@@ -175,7 +176,6 @@ func checkHand(hand deck.Hand) (string, int) {
 		return twoPairs[0], 0
 	}
 
-	// logic here is broken
 	HighTwoCards := hand[len(hand)-2:]
 	tot := 0
 	for _, c := range HighTwoCards {
@@ -216,7 +216,7 @@ func computerLogic(comp *player.Player, deck *deck.Deck) (string, int) {
 	selected := []int{}
 	for i := 0; i < n; i++ {
 		t := time.Now()
-		source := rand.NewSource(t.Unix())
+		source := rand.NewSource(t.UnixNano())
 		r := rand.New(source)
 		n := r.Perm(5)[0] + 1
 		contains := func(n int, sel []int) bool {
@@ -231,7 +231,13 @@ func computerLogic(comp *player.Player, deck *deck.Deck) (string, int) {
 			selected = append(selected, n)
 		}
 	}
-	comp.RemoveCard(selected)
+
+	for _, s := range selected {
+		comp.Cards[s-1].Remove = true
+	}
+
+	comp.RemoveCards()
+
 	for i := 0; i < len(selected); i++ {
 		comp.Cards = append(comp.Cards, deck.Draw())
 	}
@@ -307,7 +313,10 @@ func main() {
 			for {
 
 				if len(selected) == discard {
-					playerOne.RemoveCard(selected)
+					for _, s := range selected {
+						playerOne.Cards[s-1].Remove = true
+					}
+					playerOne.RemoveCards()
 					break
 				}
 

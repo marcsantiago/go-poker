@@ -31,21 +31,12 @@ func ShowHand(p *Player) {
 }
 
 // RemoveCard removes the card from the players hand
-// THIS LOGIC MAY NOT WORK AS EXPECTED NEED TO WRITE TESTS
-func (p *Player) RemoveCard(selected []int) {
-	var cardsToRemove []deck.Card
-	for _, s := range selected {
-		cardsToRemove = append(cardsToRemove, p.Cards[s-1])
-	}
-
-	for _, card := range cardsToRemove {
-		deleted := 0
-		for i := range p.Cards {
-			j := i - deleted
-			if p.Cards[j] == card {
-				p.Cards = p.Cards[:j+copy(p.Cards[j:], p.Cards[j+1:])]
-				deleted++
-			}
+func (p *Player) RemoveCards() {
+	newHand := make([]deck.Card, 0, 5)
+	for _, c := range p.Cards {
+		if !c.Remove {
+			newHand = append(newHand, c)
 		}
 	}
+	p.Cards = newHand
 }

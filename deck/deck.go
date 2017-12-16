@@ -12,6 +12,7 @@ type Card struct {
 	IsRoyal   bool
 	RoyalType string
 	IsAce     bool
+	Remove    bool
 }
 
 // Hand is a collection player of cards
