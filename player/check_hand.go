@@ -39,7 +39,7 @@ func CheckHand(hand deck.Hand) (string, int) {
 	}
 
 	if val, ok := isPair(hand); ok {
-		return "pair of a kind  " + val, 0
+		return "pair of a kind " + val, 0
 	}
 
 	// nothing in the hand return the highest card value
