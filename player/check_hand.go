@@ -44,9 +44,9 @@ func CheckHand(hand deck.Hand) (string, int) {
 
 	// nothing in the hand return the highest card value
 	nm := reduce(hand)
-	for _, v := range nm {
-		if v > tot {
-			tot = v
+	for k := range nm {
+		if k > tot {
+			tot = k
 		}
 	}
 
