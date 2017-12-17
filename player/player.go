@@ -30,7 +30,7 @@ func ShowHand(p *Player) {
 	}
 }
 
-// RemoveCard removes the card from the players hand
+// RemoveCards creates a new hand with the cards removed
 func (p *Player) RemoveCards() {
 	newHand := make([]deck.Card, 0, 5)
 	for _, c := range p.Cards {

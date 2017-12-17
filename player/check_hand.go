@@ -1,12 +1,14 @@
 package player
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 
 	"github.com/marcsantiago/go-poker/deck"
 )
 
+// CheckHand determines the hands value
 func CheckHand(hand deck.Hand) (string, int) {
 	var tot int
 	// sort hand for easy checking
@@ -16,12 +18,8 @@ func CheckHand(hand deck.Hand) (string, int) {
 		return "royal flush", 0
 	}
 
-	if isFlush(hand) {
-		return "flush", 0
-	}
-
 	if isStraight(hand) {
-		return "straight", 0
+		return "straight flush", 0
 	}
 
 	if isFullHouse(hand) {
@@ -42,6 +40,14 @@ func CheckHand(hand deck.Hand) (string, int) {
 
 	if val, ok := isPair(hand); ok {
 		return "pair of a kind  " + val, 0
+	}
+
+	// nothing in the hand return the highest card value
+	nm := reduce(hand)
+	for _, v := range nm {
+		if v > tot {
+			tot = v
+		}
 	}
 
 	return "", tot
@@ -107,24 +113,33 @@ func isFlush(hand deck.Hand) bool {
 }
 
 func isStraight(hand deck.Hand) bool {
-	for _, c := range hand {
-		if c.IsRoyal {
-			switch c.RoyalType {
-			case deck.Royal("jack"):
-				c.Value = 10
-			case deck.Royal("queen"):
-				c.Value = 11
-			case deck.Royal("king"):
-				c.Value = 12
-			}
-		}
+
+	if !isFlush(hand) {
+		return false
 	}
 
-	sort.Sort(hand)
-	for i := range hand {
+	tempHand := make(deck.Hand, 0, len(hand))
+	for _, c := range hand {
+		tempCard := c
+		if tempCard.IsRoyal {
+			switch tempCard.RoyalType {
+			case deck.Royal("jack"):
+				tempCard.Value = 11
+			case deck.Royal("queen"):
+				tempCard.Value = 12
+			case deck.Royal("king"):
+				tempCard.Value = 13
+			}
+		}
+		tempHand = append(tempHand, tempCard)
+	}
+
+	sort.Sort(tempHand)
+	for i := range tempHand {
 		j := i + 1
-		if j < len(hand) {
-			if hand[i].Value+1 != hand[j].Value {
+		if j < len(tempHand) {
+			if tempHand[i].Value+1 != tempHand[j].Value {
+				fmt.Println(tempHand[i].Value+1, tempHand[j].Value)
 				return false
 			}
 		}
@@ -173,10 +188,6 @@ func isFourOfAKind(hand deck.Hand) (string, bool) {
 func isThreeOfAKind(hand deck.Hand) (string, bool) {
 	nm := reduce(hand)
 
-	if len(nm) > 2 {
-		return "", false
-	}
-
 	for k, v := range nm {
 		if v == 3 {
 			return getValue(k), true
@@ -191,13 +202,15 @@ func isTwoPair(hand deck.Hand) (string, bool) {
 
 	var h int
 	for k, v := range nm {
-		if v == 2 {
+		if v >= 2 {
 			counter++
+			if k > h {
+				h = k
+			}
 		}
-		if k > h {
-			h = k
-		}
+
 	}
+
 	return getValue(h), (counter == 2)
 }
 
@@ -213,25 +226,29 @@ func isPair(hand deck.Hand) (string, bool) {
 }
 
 func reduce(hand deck.Hand) map[int]int {
+	tempHand := make(deck.Hand, 0, len(hand))
 	for _, c := range hand {
-		if c.IsRoyal {
-			switch c.RoyalType {
+		tempCard := c
+		if tempCard.IsRoyal {
+			switch tempCard.RoyalType {
 			case deck.Royal("jack"):
-				c.Value = 11
+				tempCard.Value = 11
 			case deck.Royal("queen"):
-				c.Value = 12
+				tempCard.Value = 12
 			case deck.Royal("king"):
-				c.Value = 13
+				tempCard.Value = 13
 			}
 		}
 
 		if c.IsAce {
-			c.Value = 14
+			tempCard.Value = 14
 		}
+
+		tempHand = append(tempHand, tempCard)
 	}
 
 	nm := make(map[int]int)
-	for _, c := range hand {
+	for _, c := range tempHand {
 		nm[c.Value]++
 	}
 	return nm

@@ -3,8 +3,7 @@ package player
 // Score maps a value to a hand type
 var Score = map[string]int{
 	"royal flush":       200,
-	"flush":             190,
-	"straight":          180,
+	"straight flush":    190,
 	"full house":        170,
 	"4 of a kind ace":   160,
 	"4 of a kind king":  155,
