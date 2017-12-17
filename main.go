@@ -15,6 +15,19 @@ var (
 	computer  player.Player
 )
 
+func initHand(cards *deck.Deck, p *player.Player, c *player.Player) {
+	p.Cards = make([]deck.Card, 0, 5)
+	c.Cards = make([]deck.Card, 0, 5)
+
+	for i := 0; i < 10; i++ {
+		if i%2 == 0 {
+			p.Cards = append(p.Cards, cards.Draw())
+		} else {
+			c.Cards = append(c.Cards, cards.Draw())
+		}
+	}
+}
+
 func computerLogic(comp *player.Player, deck *deck.Deck) (string, int) {
 	// first check the hand to see of the score is high enough to do nothing
 	// computer will stay with a hand of 3 of a kind or greater
@@ -63,45 +76,6 @@ func computerLogic(comp *player.Player, deck *deck.Deck) (string, int) {
 		comp.Cards = append(comp.Cards, deck.Draw())
 	}
 	return player.CheckHand(comp.Cards)
-}
-
-func findCardsByValue(hand deck.Hand, value int, isRoyal bool, royalType string) []deck.Card {
-	var cards deck.Hand
-	for _, c := range hand {
-		if isRoyal {
-			if c.RoyalType == royalType {
-				cards = append(cards, c)
-			}
-		} else {
-			if c.Value == value {
-				cards = append(cards, c)
-			}
-		}
-
-	}
-	return cards
-}
-
-func inSlice(slice []string, tar string) bool {
-	for _, s := range slice {
-		if s == tar {
-			return true
-		}
-	}
-	return false
-}
-
-func initHand(cards *deck.Deck, p *player.Player, c *player.Player) {
-	p.Cards = make([]deck.Card, 0, 5)
-	c.Cards = make([]deck.Card, 0, 5)
-
-	for i := 0; i < 10; i++ {
-		if i%2 == 0 {
-			p.Cards = append(p.Cards, cards.Draw())
-		} else {
-			c.Cards = append(c.Cards, cards.Draw())
-		}
-	}
 }
 
 func main() {
