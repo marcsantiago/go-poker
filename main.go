@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"sort"
 	"strings"
 	"time"
 
@@ -16,188 +15,10 @@ var (
 	computer  player.Player
 )
 
-func checkHand(hand deck.Hand) (string, int) {
-	// check for royal flush
-	sort.Sort(hand)
-	numberOfTens := 0
-	numberOfRoyals := 0
-	numberOfAces := 0
-	allSameSuit := true
-	future := 1
-
-	for i, c := range hand {
-		if c.IsRoyal {
-			numberOfRoyals++
-		}
-		if c.IsAce {
-			numberOfAces++
-		}
-		if c.Value == 10 && !c.IsRoyal {
-			numberOfTens++
-		}
-		if future < len(hand) {
-			if hand[i].Suit != hand[future].Suit {
-				allSameSuit = false
-			}
-		}
-		future++
-	}
-
-	if allSameSuit {
-		if numberOfRoyals == 3 { // jack, queen, king
-			if numberOfAces == 1 { // ace
-				if numberOfTens == 1 { // 10
-					return "royal flush", 0
-				}
-			}
-		}
-	}
-
-	// check for flush
-	if allSameSuit {
-		flush := true
-		future = 1
-		for i := range hand {
-			if future < len(hand) {
-				if hand[i].Value+1 != hand[future].Value {
-					flush = false
-					break
-				}
-			}
-		}
-		if flush {
-			return "flush", 0
-		}
-	}
-
-	// check for straight
-	straight := true
-	future = 1
-	for i := range hand {
-		if future < len(hand) {
-			cardValue := hand[i].Value
-			futureValue := hand[future].Value
-
-			if hand[i].IsRoyal {
-				if hand[i].RoyalType == deck.Royal("jack") {
-					cardValue = 11
-				} else if hand[i].RoyalType == deck.Royal("queen") {
-					cardValue = 12
-				} else if hand[i].RoyalType == deck.Royal("king") {
-					cardValue = 13
-				}
-			}
-			if hand[future].IsRoyal {
-				if hand[i].RoyalType == deck.Royal("jack") {
-					futureValue = 11
-				} else if hand[i].RoyalType == deck.Royal("queen") {
-					futureValue = 12
-				} else if hand[i].RoyalType == deck.Royal("king") {
-					futureValue = 13
-				}
-			}
-
-			if cardValue+1 != futureValue {
-				straight = false
-				break
-			}
-		}
-		future++
-	}
-
-	if straight {
-		return "straight", 0
-	}
-
-	// full house?
-	pair := false
-	threeOfAKind := false
-
-	for _, c := range hand {
-		cards := findCardsByValue(hand, c.Value, c.IsRoyal, c.RoyalType)
-		if len(cards) == 3 {
-			threeOfAKind = true
-		}
-		if len(cards) == 2 {
-			pair = true
-		}
-	}
-	if pair && threeOfAKind {
-		return "full house", 0
-	}
-
-	// determine if 4 of a kind, 3 or a kind, or 2 of a kind
-	twoPairs := []string{}
-	for _, card := range hand {
-		cards := findCardsByValue(hand, card.Value, card.IsRoyal, card.RoyalType)
-
-		if len(cards) == 4 {
-			if cards[0].IsAce {
-				return "4 of a kind ace", 0
-			} else if cards[0].IsRoyal {
-				return fmt.Sprintf("4 of a kind %s", cards[0].RoyalType), 0
-			} else {
-				return fmt.Sprintf("4 of a kind %d", cards[0].Value), 0
-			}
-		}
-		if len(cards) == 3 {
-			if cards[0].IsAce {
-				return "3 of a kind ace", 0
-			} else if cards[0].IsRoyal {
-				return fmt.Sprintf("3 of a kind %s", cards[0].RoyalType), 0
-			} else {
-				return fmt.Sprintf("3 of a kind %d", cards[0].Value), 0
-			}
-		}
-		if len(cards) == 2 {
-			if cards[0].IsAce {
-				if !inSlice(twoPairs, "pair of a kind ace") {
-					twoPairs = append(twoPairs, "pair of a kind ace")
-				}
-
-			} else if cards[0].IsRoyal {
-				if !inSlice(twoPairs, fmt.Sprintf("pair of a kind %s", cards[0].RoyalType)) {
-					twoPairs = append(twoPairs, fmt.Sprintf("pair of a kind %s", cards[0].RoyalType))
-				}
-			} else {
-				if !inSlice(twoPairs, fmt.Sprintf("pair of a kind %d", cards[0].Value)) {
-					twoPairs = append(twoPairs, fmt.Sprintf("pair of a kind %d", cards[0].Value))
-				}
-			}
-		}
-	}
-	// THIS LOGIC IS BROKEN
-	if len(twoPairs) == 2 {
-		if player.Score[twoPairs[0]] > player.Score[twoPairs[1]] {
-			return "high " + twoPairs[0], 0
-		}
-		return "high " + twoPairs[1], 0
-	} else if len(twoPairs) == 1 {
-		return twoPairs[0], 0
-	}
-
-	HighTwoCards := hand[len(hand)-2:]
-	tot := 0
-	for _, c := range HighTwoCards {
-		if c.IsRoyal {
-			if c.RoyalType == fmt.Sprintf("%s", deck.Royal("king")) {
-				tot = tot + 13
-			} else if c.RoyalType == fmt.Sprintf("%s", deck.Royal("queen")) {
-				tot = tot + 12
-			} else if c.RoyalType == fmt.Sprintf("%s", deck.Royal("jack")) {
-				tot = tot + 11
-			}
-		} else {
-			tot = tot + c.Value
-		}
-	}
-	return "", tot
-}
-
 func computerLogic(comp *player.Player, deck *deck.Deck) (string, int) {
 	// first check the hand to see of the score is high enough to do nothing
 	// computer will stay with a hand of 3 of a kind or greater
-	handName, baseScore := checkHand(comp.Cards)
+	handName, baseScore := player.CheckHand(comp.Cards)
 	compScore := baseScore
 	if baseScore > 0 {
 		compScore = player.Score[handName]
@@ -241,7 +62,7 @@ func computerLogic(comp *player.Player, deck *deck.Deck) (string, int) {
 	for i := 0; i < len(selected); i++ {
 		comp.Cards = append(comp.Cards, deck.Draw())
 	}
-	return checkHand(comp.Cards)
+	return player.CheckHand(comp.Cards)
 }
 
 func findCardsByValue(hand deck.Hand, value int, isRoyal bool, royalType string) []deck.Card {
@@ -338,7 +159,7 @@ func main() {
 			fmt.Printf("\n\n")
 		}
 
-		player1HandName, baseScore := checkHand(playerOne.Cards)
+		player1HandName, baseScore := player.CheckHand(playerOne.Cards)
 		player1Score := baseScore
 		if player1Score == 0 {
 			player1Score = player.Score[player1HandName]
