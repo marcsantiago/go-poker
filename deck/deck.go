@@ -44,6 +44,7 @@ func (d *Deck) CreateDeck() {
 		}
 	}
 
+	// add royals
 	for _, r := range royalSuit {
 		for _, s := range suit {
 			d.Cards = append(d.Cards, Card{
@@ -56,6 +57,7 @@ func (d *Deck) CreateDeck() {
 		}
 	}
 
+	// add aces
 	for _, s := range suit {
 		d.Cards = append(d.Cards, Card{
 			Suit:      s,
@@ -69,13 +71,11 @@ func (d *Deck) CreateDeck() {
 
 // Draw picks a card from the deck. If the deck is empty it creates a new deck and shuffles
 func (d *Deck) Draw() Card {
-	if len(d.Cards) != 0 {
-		card := d.Cards[0]
-		d.Cards = d.Cards[1:]
-		return card
+	if len(d.Cards) == 0 {
+		d.CreateDeck()
+		d.Shuffle()
 	}
-	d.CreateDeck()
-	d.Shuffle()
+
 	card := d.Cards[0]
 	d.Cards = d.Cards[1:]
 	return card

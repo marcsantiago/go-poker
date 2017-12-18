@@ -19,12 +19,13 @@ type Player struct {
 func ShowHand(p *Player) {
 	sort.Sort(p.Cards)
 	for n, c := range p.Cards {
+		i := n + 1
 		if c.IsRoyal {
-			fmt.Printf("%d) %v of %v\n", n+1, c.RoyalType, c.Suit)
+			fmt.Printf("%d) %v of %v\n", i, c.RoyalType, c.Suit)
 		} else if c.IsAce {
-			fmt.Printf("%d) %v of %v\n", n+1, "ace", c.Suit)
+			fmt.Printf("%d) %v of %v\n", i, "ace", c.Suit)
 		} else {
-			fmt.Printf("%d) %v of %v\n", n+1, c.Value, c.Suit)
+			fmt.Printf("%d) %v of %v\n", i, c.Value, c.Suit)
 		}
 
 	}
